@@ -11,7 +11,7 @@ public:
 	~CDealCmd(void);
 public:
 	void run();
-
+	void init();
 public:
 	int onStart(void);	//等待开始状态
 	int onWork(void);	//等待工作状态
@@ -23,6 +23,7 @@ public:
 	int chkJokstick(int nJok);	//判断档位是否正确
 	int setPapiLed(void);	//根据产生的随机量点亮PAPI灯
 	int rstPapiLed(void);	//关灭PAPI灯
+	int writePara(void);	//写入参数
 	//检查三个状态是否正确
 	int chkManual(void);
 
@@ -40,6 +41,8 @@ public:
 	int setBackShow7(void);
 	int showBackFont(char* str);	//显示背景字
 	int refreshTime(void);	//刷新时间
+
+	//统计计数结果
 
 public:
 	CHardPanel m_hard;

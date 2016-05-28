@@ -60,17 +60,17 @@ typedef enum
 	enBackPicRight7
 }enBackPicRight;
 
-typedef enum
-{
-	enShowPic0,
-	enShowPic1,
-	enShowPic2,
-	enShowPic3,
-	enShowPic4,
-	enShowPic5,
-	enShowPic6,
-	enShowPic7,
-}enShowPic;
+// typedef enum
+// {
+// 	enShowPic0,
+// 	enShowPic1,
+// 	enShowPic2,
+// 	enShowPic3,
+// 	enShowPic4,
+// 	enShowPic5,
+// 	enShowPic6,
+// 	enShowPic7,
+// }enShowPic;
 
 typedef enum
 {
@@ -137,7 +137,13 @@ typedef struct _tWorkPara
 	int fangxiangtuo;	//方向舵
 }tWorkPara,*ptWorkPara;
 
-//
+//设置这三种的操作结果，主要用作是否操作过
+typedef enum
+{
+	enWorkNone,	//还没操作
+	enWorkOk,	//操作正确
+	enWorkErr,	//操作错误
+}enWorkRet;
 
 //全局参数
 typedef struct _tGlobalPara
@@ -156,7 +162,11 @@ typedef struct _tGlobalPara
 	
 	int nBackRight;	//右边的状况图
 	int nLstTime;	//上一次计时时间，这个主要用于中间空窗期时间的计算
+	int nLstCalTime;	//上一次时钟时间，这个专门用来刷新秒
 	int bNeedInvalidate;	//是否需要刷新
+	int bFuweiDirty;	//两个复位档是否被操纵过
+	int bCaozongFuwei;	//操作是否在复位上
+	int bjiayouFuwei;	//加油是否在复位 上
 }tGlobalPara,*ptGlobalPara;
 
 extern  tGlobalPara  g_stGlobalPara;

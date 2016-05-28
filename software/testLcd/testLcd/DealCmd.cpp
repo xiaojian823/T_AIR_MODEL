@@ -6,10 +6,7 @@ tGlobalPara  g_stGlobalPara;
 
 CDealCmd::CDealCmd(void)
 {
-	g_stGlobalPara.nStep = enStep_Start;
-	memset(&g_stGlobalPara, 0, sizeof g_stGlobalPara);
-	memset(m_strWind,0,sizeof m_strWind);
-	m_lstTime = 0;
+	init();
 }
 
 
@@ -195,11 +192,213 @@ int CDealCmd::chkManual( void )
 	if (g_stGlobalPara.bKeyDown)
 	{
 		g_stGlobalPara.bKeyDown = 0;
-		if (enBtnClr == g_stGlobalPara.ucCurKey)
+		do 
 		{
-			g_stGlobalPara.nStep = enStep_Start;
-			//关闭PAPI灯
-			rstPapiLed();
+			//若判断为复位的话，变成图片7
+			if ((enBtnClr == g_stGlobalPara.ucCurKey)
+				|| (g_stGlobalPara.bFuweiDirty && g_stGlobalPara.bjiayouFuwei && g_stGlobalPara.bCaozongFuwei))
+			{
+				g_stGlobalPara.bFuweiDirty = 0;
+				g_stGlobalPara.bjiayouFuwei = 1;
+				g_stGlobalPara.bCaozongFuwei = 1;
+				g_stGlobalPara.nStep = enStep_Start;
+				//关闭PAPI灯
+				rstPapiLed();
+				g_stGlobalPara.bNeedInvalidate = 1;
+				g_stGlobalPara.nBackRight = enBackPicRight7;
+				break;
+			}
+			///判断是否是正确的操作
+			//判断PAPI灯是否操作正确
+			switch (g_stGlobalPara.ucCurKey)
+			{
+			case enBtnTui:
+				{
+					g_stGlobalPara.bBackLeftShow = 1;
+					g_stGlobalPara.nBackLeft = enBackPic4ID;
+					if (g_stGlobalPara.stCfgPara.papiState == 1)
+					{
+						g_stGlobalPara.stWorkPara.caozonggan = enWorkOk;
+					}
+					else
+					{
+						g_stGlobalPara.stWorkPara.caozonggan = enWorkErr;
+					}
+					g_stGlobalPara.stCfgPara.joystick = 1;
+					g_stGlobalPara.bCaozongFuwei = 0;
+				}
+				break;
+			case enBtnShaoTui:
+				{
+					g_stGlobalPara.bBackLeftShow = 1;
+					g_stGlobalPara.nBackLeft = enBackPic3ID;
+					if (g_stGlobalPara.stCfgPara.papiState == 2)
+					{
+						g_stGlobalPara.stWorkPara.caozonggan = enWorkOk;
+					}
+					else
+					{
+						g_stGlobalPara.stWorkPara.caozonggan = enWorkErr;
+					}
+					g_stGlobalPara.stCfgPara.joystick = 2;
+					g_stGlobalPara.bCaozongFuwei = 0;
+				}
+				break;
+			case enBtnBaochi:
+				{
+					g_stGlobalPara.bBackLeftShow = 1;
+					g_stGlobalPara.nBackLeft = enBackPic0ID;
+					if (g_stGlobalPara.stCfgPara.papiState == 3)
+					{
+						g_stGlobalPara.stWorkPara.caozonggan = enWorkOk;
+					}
+					else
+					{
+						g_stGlobalPara.stWorkPara.caozonggan = enWorkErr;
+					}
+					g_stGlobalPara.stCfgPara.joystick = 3;
+					g_stGlobalPara.bCaozongFuwei = 0;
+				}
+				break;
+			case enBtnShaola:
+				{
+					g_stGlobalPara.bBackLeftShow = 1;
+					g_stGlobalPara.nBackLeft = enBackPic2ID;
+					if (g_stGlobalPara.stCfgPara.papiState == 4)
+					{
+						g_stGlobalPara.stWorkPara.caozonggan = enWorkOk;
+					}
+					else
+					{
+						g_stGlobalPara.stWorkPara.caozonggan = enWorkErr;
+					}
+					g_stGlobalPara.stCfgPara.joystick = 4;
+					g_stGlobalPara.bCaozongFuwei = 0;
+				}
+				break;
+			case enBtnla:
+				{
+					g_stGlobalPara.bBackLeftShow = 1;
+					g_stGlobalPara.nBackLeft = enBackPic1ID;
+					if (g_stGlobalPara.stCfgPara.papiState == 5)
+					{
+						g_stGlobalPara.stWorkPara.caozonggan = enWorkOk;
+					}
+					else
+					{
+						g_stGlobalPara.stWorkPara.caozonggan = enWorkErr;
+					}
+					g_stGlobalPara.stCfgPara.joystick = 5;
+					g_stGlobalPara.bCaozongFuwei = 0;
+				}
+				break;
+			case enBtnFuwei:
+				{
+					//no--------------
+					g_stGlobalPara.bFuweiDirty = 1;
+					g_stGlobalPara.bCaozongFuwei = 1;
+				}
+				break;
+			//判断油门是否操作正确
+			case enBtnJiayou:
+				{
+					g_stGlobalPara.bBackLeftShow = 1;
+					g_stGlobalPara.nBackLeft = enBackPic1ID;
+					if ((g_stGlobalPara.stCfgPara.idlespeed < 60) && (g_stGlobalPara.stCfgPara.winddirec == 0))
+					{
+						g_stGlobalPara.stWorkPara.youmen = enWorkOk;
+					}
+					else
+					{
+						g_stGlobalPara.stWorkPara.youmen = enWorkErr;
+					}
+					g_stGlobalPara.stCfgPara.accelerator = 1;
+					g_stGlobalPara.bjiayouFuwei = 0;
+				}
+				break;
+			case enBtnJianyou:
+				{
+					g_stGlobalPara.bBackLeftShow = 1;
+					g_stGlobalPara.nBackLeft = enBackPic4ID;
+					if ((g_stGlobalPara.stCfgPara.idlespeed >= 60) && (g_stGlobalPara.stCfgPara.winddirec == 1))
+					{
+						g_stGlobalPara.stWorkPara.youmen = enWorkOk;
+					}
+					else
+					{
+						g_stGlobalPara.stWorkPara.youmen = enWorkErr;
+					}
+					g_stGlobalPara.stCfgPara.accelerator = 2;
+					g_stGlobalPara.bjiayouFuwei = 0;
+				}
+				break;
+			case enBtnjiaFuWei:
+				{
+					g_stGlobalPara.bBackLeftShow = 1;
+					g_stGlobalPara.nBackLeft = enBackPic0ID;
+					g_stGlobalPara.bFuweiDirty = 1;
+					g_stGlobalPara.bjiayouFuwei = 1;
+				}
+				break;
+			//判断操作仪是否正确
+			case enBtnLeft:
+				{
+					g_stGlobalPara.bBackLeftShow = 1;
+					g_stGlobalPara.nBackLeft = enBackPic5ID;
+					if (g_stGlobalPara.stCfgPara.winddirec == 1)
+					{
+						g_stGlobalPara.stWorkPara.fangxiangtuo = enWorkOk;
+					}
+					else
+					{
+						g_stGlobalPara.stWorkPara.fangxiangtuo = enWorkErr;
+					}
+					g_stGlobalPara.stCfgPara.rudder = 0;
+				}
+				break;
+			case enBtnRight:
+				{
+					g_stGlobalPara.bBackLeftShow = 1;
+					g_stGlobalPara.nBackLeft = enBackPic6ID;
+					if (g_stGlobalPara.stCfgPara.winddirec == 0)
+					{
+						g_stGlobalPara.stWorkPara.fangxiangtuo = enWorkOk;
+					}
+					else
+					{
+						g_stGlobalPara.stWorkPara.fangxiangtuo = enWorkErr;
+					}
+					g_stGlobalPara.stCfgPara.rudder = 1;
+				}
+				break;
+			default:
+				break;
+			}
+			
+		} while (0);
+		
+		//判断结果是否正确
+		if ((g_stGlobalPara.stWorkPara.caozonggan == enWorkOk) &&
+			(g_stGlobalPara.stWorkPara.fangxiangtuo == enWorkOk) &&
+			(g_stGlobalPara.stWorkPara.youmen == enWorkOk))
+		{
+			//这个是表示全部操作完毕，并且结果正确
+			g_stGlobalPara.bBackLeftShow = 1;
+			g_stGlobalPara.nBackLeft = enBackPic4ID;
+			g_stGlobalPara.stCfgPara.result = 1;
+			//这里开始写计数结果
+			writePara();
+		}
+		else if ((g_stGlobalPara.stWorkPara.caozonggan == enWorkErr) ||
+			(g_stGlobalPara.stWorkPara.fangxiangtuo == enWorkErr) ||
+			(g_stGlobalPara.stWorkPara.youmen == enWorkErr))
+		{
+			//只要有一步操作错误，马上结束
+			g_stGlobalPara.bBackLeftShow = 1;
+			g_stGlobalPara.nBackLeft = enBackPic5ID;
+			g_stGlobalPara.stCfgPara.result = 0;
+			//这里开始写计数结果
+			writePara();
 		}
 	}
 	return err;
@@ -269,15 +468,6 @@ int CDealCmd::rstPapiLed( void )
 int CDealCmd::invalidate( void )
 {
 	int err = enSucess;
-	
-	if (g_stGlobalPara.stCfgPara.winddirec == 1)
-	{
-		strcpy(m_strWind, "顺风");
-	}
-	else
-	{
-		strcpy(m_strWind, "逆风");
-	}
 	setBackLeft();
 	refreshTime();
 	setBackRight();
@@ -301,6 +491,7 @@ int CDealCmd::setBackShow1( void )
 	sprintf(str,"模式:%02d 编号:%02d\n第%02d次实验\n用时:%03d秒\n空速:%02dkt  风向:%s", pt->mode, pt->id, pt->times, pt->rtTime,
 		pt->idlespeed, strFeng);
 	showBackFont(str);
+	
 	return err;
 }
 
@@ -321,6 +512,9 @@ int CDealCmd::setBackShow2( void )
 	sprintf(str,"实验马上开始,请准备！\n    第%02d次实验\n    用时:%03d秒\n空速:%02dkt  风向：%s", pt->times, pt->rtTime,
 		pt->idlespeed, strFeng);
 	showBackFont(str);
+	//这里这个等两秒后开始显示图片2
+	g_stGlobalPara.nLstTime = m_hard.getTickCount();
+	g_stGlobalPara.nBackRight = enBackPicRight3;
 	return err;
 }
 
@@ -361,6 +555,9 @@ int CDealCmd::setBackShow4( void )
 	sprintf(str,"恭喜你,操作正确\n    第%02d次实验\n    用时:%03d秒\n空速:%02dkt  风向：%s", pt->times, pt->rtTime,
 		pt->idlespeed, strFeng);
 	showBackFont(str);
+	//这里这个等两秒后开始显示图片2
+	g_stGlobalPara.nLstTime = m_hard.getTickCount();
+	g_stGlobalPara.nBackRight = enBackPicRight6;
 	return err;
 }
 
@@ -381,6 +578,9 @@ int CDealCmd::setBackShow5( void )
 	sprintf(str,"很遗憾,操作错误\n    第%02d次实验\n    用时:%03d秒\n空速:%02dkt  风向：%s", pt->times, pt->rtTime,
 		pt->idlespeed, strFeng);
 	showBackFont(str);
+	//这里这个等两秒后开始显示图片2
+	g_stGlobalPara.nLstTime = m_hard.getTickCount();
+	g_stGlobalPara.nBackRight = enBackPicRight6;
 	return err;
 }
 
@@ -432,7 +632,7 @@ int CDealCmd::setBackLeft( void )
 	{
 		g_stGlobalPara.bBackLeftShow = 0;
 
-		m_hard.chgBackGround(g_stGlobalPara.nBackLeft);
+		m_hard.chgBackGroudPic(g_stGlobalPara.nBackLeft);
 	}
 	return err;
 }
@@ -466,10 +666,10 @@ int CDealCmd::refreshTime( void )
 	//这里要判断一秒刷新一次，并且是要在需要刷新的时候刷
 	if (g_stGlobalPara.bStartTime)
 	{
-		if (m_hard.getTickCount() - g_stGlobalPara.nLstTime > 1000)
+		if (m_hard.getTickCount() - g_stGlobalPara.nLstCalTime > 1000)
 		{
 			g_stGlobalPara.stCfgPara.rtTime++;
-			g_stGlobalPara.nLstTime = m_hard.getTickCount();
+			g_stGlobalPara.nLstCalTime = m_hard.getTickCount();
 			g_stGlobalPara.bNeedInvalidate = 1;
 		}
 	}
@@ -479,7 +679,7 @@ int CDealCmd::refreshTime( void )
 int CDealCmd::setBackRight()
 {
 	int err = enSucess;
-	if (g_stGlobalPara.bNeedInvalidate)
+	if ((m_hard.getTickCount() - g_stGlobalPara.nLstTime > 2000) && g_stGlobalPara.bNeedInvalidate)
 	{
 		g_stGlobalPara.bNeedInvalidate = 0;
 		switch (g_stGlobalPara.nBackRight)
@@ -529,6 +729,24 @@ int CDealCmd::setBackRight()
 		}
 	}
 	return err;
+}
+
+int CDealCmd::writePara( void )
+{
+	int err = enSucess;
+
+	return err;
+}
+
+void CDealCmd::init()
+{
+	g_stGlobalPara.nStep = enStep_Start;
+	memset(&g_stGlobalPara, 0, sizeof g_stGlobalPara);
+	memset(m_strWind,0,sizeof m_strWind);
+	m_lstTime = 0;
+	g_stGlobalPara.bFuweiDirty = 0;
+	g_stGlobalPara.bjiayouFuwei = 1;
+	g_stGlobalPara.bCaozongFuwei = 1;
 }
 
 
