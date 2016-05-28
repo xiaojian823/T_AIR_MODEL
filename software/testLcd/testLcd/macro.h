@@ -56,7 +56,8 @@ typedef enum
 	enBackPicRight3,
 	enBackPicRight4,
 	enBackPicRight5,
-	enBackPicRight6
+	enBackPicRight6,
+	enBackPicRight7
 }enBackPicRight;
 
 typedef enum
@@ -154,6 +155,8 @@ typedef struct _tGlobalPara
 	int bBackLeftShow;	//左边是否开挂
 	
 	int nBackRight;	//右边的状况图
+	int nLstTime;	//上一次计时时间，这个主要用于中间空窗期时间的计算
+	int bNeedInvalidate;	//是否需要刷新
 }tGlobalPara,*ptGlobalPara;
 
 extern  tGlobalPara  g_stGlobalPara;

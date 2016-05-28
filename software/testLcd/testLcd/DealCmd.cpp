@@ -106,25 +106,25 @@ int CDealCmd::onStart( void )
 			{
 				if (enBtnY == g_stGlobalPara.ucCurKey)
 				{
+					int nValue = 0;
+					if (g_stGlobalPara.nKeyCount > 1)
+					{
+						nValue = g_stGlobalPara.ucRecKey[0]*10 + g_stGlobalPara.ucRecKey[1];
+					}
+					else
+						nValue = g_stGlobalPara.ucRecKey[0];
 					if (enMode_setId == nMode)
 					{
-						if (g_stGlobalPara.nKeyCount > 1)
-						{
-							g_stGlobalPara.stCfgPara.id = g_stGlobalPara.ucRecKey[0]*10 + g_stGlobalPara.ucRecKey[1];
-						}
-						else
-							g_stGlobalPara.stCfgPara.id = g_stGlobalPara.ucRecKey[0];
+							g_stGlobalPara.stCfgPara.id = nValue;
 					}
 					else if (enMode_setMode == nMode)
 					{
-						if (g_stGlobalPara.nKeyCount > 1)
-							g_stGlobalPara.stCfgPara.mode = g_stGlobalPara.ucRecKey[0]*10 + g_stGlobalPara.ucRecKey[1];
-						else
-							g_stGlobalPara.stCfgPara.mode = g_stGlobalPara.ucRecKey[0];
+							g_stGlobalPara.stCfgPara.mode = nValue;
 					}
 					g_stGlobalPara.nKeyCount = 0;
 					memset(&g_stGlobalPara.ucRecKey, 0, sizeof g_stGlobalPara.ucRecKey);
 					nMode = enMode_none;
+					break;
 				}
 				else if (enBtnBack == g_stGlobalPara.ucCurKey)
 				{
@@ -153,7 +153,7 @@ int CDealCmd::onStart( void )
 			if (enBtnStart == g_stGlobalPara.ucCurKey)
 			{
 				g_stGlobalPara.nStep = enStep_Work;
-				g_stGlobalPara.stCfgPara.times = (g_stGlobalPara.stCfgPara.times + 1)%99 + 1;
+				g_stGlobalPara.stCfgPara.times = g_stGlobalPara.stCfgPara.times%99 + 1;
 
 				//都重新开始计数
 				randSign();
@@ -169,26 +169,9 @@ int CDealCmd::onStart( void )
 int CDealCmd::onWork( void )
 {
 	int err = enSucess;
-	//检查有没有按清零,这个写的有毛病，应该是停止
-	if (g_stGlobalPara.bKeyDown)
-	{
-		g_stGlobalPara.bKeyDown = 0;
-		if (enBtnClr == g_stGlobalPara.ucCurKey)
-		{
-			g_stGlobalPara.nStep = enStep_Start;
-		}
-	}
 	//检查三个设置的对不对,对的话就直接这次结束，并写入记录
 	int ret = chkManual();
-	if (ret != enWaiting)
-	{
-		g_stGlobalPara.nStep = enStep_Start;
-	}
-	else
-	{
-		//在等待状态的话，得实时刷新当前时间
-		invalidate();
-	}
+	invalidate();
 	return err;
 }
 
@@ -206,9 +189,19 @@ int CDealCmd::chkKeyDown( void )
 
 int CDealCmd::chkManual( void )
 {
-	int err = enErr;
+	int err = enWaiting;
 	//判断按键这些东西是否跟上次比有变化
-
+	//检查有没有按清零,这个写的有毛病，应该是停止
+	if (g_stGlobalPara.bKeyDown)
+	{
+		g_stGlobalPara.bKeyDown = 0;
+		if (enBtnClr == g_stGlobalPara.ucCurKey)
+		{
+			g_stGlobalPara.nStep = enStep_Start;
+			//关闭PAPI灯
+			rstPapiLed();
+		}
+	}
 	return err;
 }
 
@@ -286,46 +279,8 @@ int CDealCmd::invalidate( void )
 		strcpy(m_strWind, "逆风");
 	}
 	setBackLeft();
-	switch (g_stGlobalPara.nBackRight)
-	{
-		case enBackPicRight0:
-			{
-				err = setBackShow1();
-			}
-			break;
-		case enBackPicRight1:
-			{
-				err = setBackShow2();
-			}
-			break;
-		case enBackPicRight2:
-			{
-				err = setBackShow3();
-			}
-			break;
-		case enBackPicRight3:
-			{
-				err = setBackShow4();
-			}
-			break;
-		case enBackPicRight4:
-			{
-				err = setBackShow5();
-			}
-			break;
-		case enBackPicRight5:
-			{
-				err = setBackShow6();
-			}
-			break;
-		case enBackPicRight6:
-			{
-				err = setBackShow7();
-			}
-			break;
-		default:
-			break;
-	}
+	refreshTime();
+	setBackRight();
 	return err;
 }
 
@@ -502,6 +457,77 @@ int CDealCmd::showBackFont( char* str )
 {
 	int err = enSucess;
 	DisText(BACK_FONT_TOP, BACK_FONT_LEFT, 1, FONT_TYPE, (uchar*)str);
+	return err;
+}
+
+int CDealCmd::refreshTime( void )
+{
+	int err = enSucess;
+	//这里要判断一秒刷新一次，并且是要在需要刷新的时候刷
+	if (g_stGlobalPara.bStartTime)
+	{
+		if (m_hard.getTickCount() - g_stGlobalPara.nLstTime > 1000)
+		{
+			g_stGlobalPara.stCfgPara.rtTime++;
+			g_stGlobalPara.nLstTime = m_hard.getTickCount();
+			g_stGlobalPara.bNeedInvalidate = 1;
+		}
+	}
+	return err;
+}
+
+int CDealCmd::setBackRight()
+{
+	int err = enSucess;
+	if (g_stGlobalPara.bNeedInvalidate)
+	{
+		g_stGlobalPara.bNeedInvalidate = 0;
+		switch (g_stGlobalPara.nBackRight)
+		{
+		case enBackPicRight0:
+			{
+				err = setBackShow0();
+			}
+			break;
+		case enBackPicRight1:
+			{
+				err = setBackShow1();
+			}
+			break;
+		case enBackPicRight2:
+			{
+				err = setBackShow2();
+			}
+			break;
+		case enBackPicRight3:
+			{
+				err = setBackShow3();
+			}
+			break;
+		case enBackPicRight4:
+			{
+				err = setBackShow4();
+			}
+			break;
+		case enBackPicRight5:
+			{
+				err = setBackShow5();
+			}
+			break;
+		case enBackPicRight6:
+			{
+				err = setBackShow6();
+			}
+			break;
+		case enBackPicRight7:
+			{
+				err = setBackShow7();
+			}
+			break;
+		default:
+			break;
+		}
+	}
 	return err;
 }
 

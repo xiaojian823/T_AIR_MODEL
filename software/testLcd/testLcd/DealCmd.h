@@ -29,6 +29,7 @@ public:
 	//刷新图片和状态
 	int invalidate(void);
 	int setBackLeft(void);	//设置左边显示的图片
+	int setBackRight();		//刷新右边图
 	int setBackShow0(void);	//显示图片0
 	int setBackShow1(void); //显示图片1
 	int setBackShow2(void);
@@ -38,6 +39,8 @@ public:
 	int setBackShow6(void);
 	int setBackShow7(void);
 	int showBackFont(char* str);	//显示背景字
+	int refreshTime(void);	//刷新时间
+
 public:
 	CHardPanel m_hard;
 	int m_nextStep;
